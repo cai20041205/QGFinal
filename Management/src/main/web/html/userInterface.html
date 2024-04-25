@@ -99,6 +99,7 @@
                     <el-button type="primary" v-if="shouldShowButton3" @click="ApplyToBeGroupManager">
                         申请成为群组负责人
                     </el-button>
+                    <el-button type="primary" v-if="shouldShowButton12" @click="inviteJoin">邀请用户加入企业群</el-button>
                     <el-button type="primary" @click="LookInformation">企业消息</el-button>
                     <el-button type="primary" v-if="shouldShowButton2" @click="LeaveEnterprise">退出群组</el-button>
                 </el-row>
@@ -379,6 +380,25 @@
             <el-table-column property="information" label="企业账单"></el-table-column>
         </el-table>
     </el-dialog>
+
+    <el-dialog
+            title="邀请用户进群"
+            :visible.sync="dialogVisible14"
+            width="60%"
+            :before-close="handleClose">
+        <el-form ref="form" :model="form8" label-width="90px">
+            <el-form-item label="用户名" >
+                <el-input v-model="form8.username"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update8">确认</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
 </div>
 </body>
 
@@ -388,6 +408,9 @@
         el: '#app',
         methods: {
             // 在这里定义方法
+            inviteJoin(){
+                this.dialogVisible14=true;
+            },
 
             proceeds() {
                 let vm = this;
@@ -1102,6 +1125,30 @@
                 })
             },
 
+            update8(){
+                let vm=this;
+                let jsonData={
+                    username:vm.form8.username,
+                    enterprise:vm.tableData[0].enterprise
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/inviteJoin',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        vm.$message('已拉入');
+                        vm.dialogVisible14=false;
+                        vm.form8={
+                            username:''
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
             handleClick(tab, event) {
                 let vm = this;
                 if (tab.name === 'first') {
@@ -1167,6 +1214,7 @@
                         vm.shouldShowButton7 = true;
                         vm.shouldShowButton8 = true;
                         vm.shouldShowButton11 = true;
+                        vm.shouldShowButton12 = true;
                     }
                     vm.shouldShowButton2 = true;
                     vm.shouldShowButton1 = false;
@@ -1276,6 +1324,9 @@
                     paymentAmount: '',
                     paymentCode: ''
                 },
+                form8:{
+                  username:''
+                },
                 rules: {
                     newPassword: [
                         {validator: validatePass, trigger: 'blur'}
@@ -1308,6 +1359,7 @@
                 dialogVisible11: false,
                 dialogVisible12: false,
                 dialogVisible13: false,
+                dialogVisible14: false,
                 activeName: 'second',
                 circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
                 identity: '',
@@ -1321,7 +1373,8 @@
                 shouldShowButton8: false,
                 shouldShowButton9: false,
                 shouldShowButton10: false,
-                shouldShowButton11: false
+                shouldShowButton11: false,
+                shouldShowButton12: false,
             }; // 在这里定义数据
         },
         mounted() {

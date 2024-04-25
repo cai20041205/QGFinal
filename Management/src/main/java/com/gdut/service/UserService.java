@@ -280,8 +280,20 @@ public class UserService {
         return query;
     }
 
+    //或取用户是否被封禁
     public int getbannedState(User user){
         String sql="select bannedState from user where username=?";
         return (Integer) CRUDUtils.query(sql,user.getUsername()).get(0).get(0);
     }
+
+    //邀请用户进群组
+    public void inviteJoin(User user){
+        String sql="update user set enterprise=? where username=?";
+        CRUDUtils.update(sql,user.getEnterprise(),user.getUsername());
+        String sql2 = "select NumberOfEnterprise from enterprise where enterpriseName=?";
+        String sql3 = "update enterprise set NumberOfEnterprise=? where enterpriseName=?";
+        int NumberOfEnterprise = ((Integer) CRUDUtils.query(sql2, user.getEnterprise()).get(0).get(0)) - 1;
+        CRUDUtils.update(sql3, NumberOfEnterprise, user.getEnterprise());
+    }
+
 }

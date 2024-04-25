@@ -478,12 +478,28 @@ public class UserServlet extends BaseServlet{
         out.flush();
     }
 
+    //或取用户是否被封禁的结果
     public void getbannedState(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
         User user = JSON.parseObject(readRequestBody(req), User.class);
         //响应json字符串
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("status", 200);
         map.put("data",userService.getbannedState(user));
+        map.put("msg", "结果");
+        String jsonString = JSON.toJSONString(map);
+        // 将 JSON 响应写入到输出流中
+        PrintWriter out = resp.getWriter();
+        out.write(jsonString);
+        out.flush();
+    }
+
+    public void inviteJoin(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException{
+        User user = JSON.parseObject(readRequestBody(req), User.class);
+        userService.inviteJoin(user);
+        //响应json字符串
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("status", 200);
+        map.put("data","");
         map.put("msg", "结果");
         String jsonString = JSON.toJSONString(map);
         // 将 JSON 响应写入到输出流中
