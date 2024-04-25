@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>普通用户页面</title>
+</head>
+
+<script src="../js/code.jquery.com_jquery-3.7.1.js"></script>
+<script src="../js/vue.js"></script>
+<script src="../element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+<body>
+<div id="app">
+    <template>
+        <el-tabs v-model="activeName" @tab-click="handleClick">
+
+            <el-tab-pane label="企业群组" name="first">
+                <template>
+                    <el-table
+                            :data="tableData2"
+                            stripe
+                            style="width: 100%">
+                        <el-table-column
+                                prop="enterpriseName"
+                                label="企业名字"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="NumberOfEnterprise"
+                                label="企业人数"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="EnterpriseWorkDirection"
+                                label="企业工作方向"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="enterpriseFund"
+                                label="企业资金"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                label="操作"
+                                v-if="shouldShowButton1">
+                            <template v-slot="{ row }">
+                                <el-button type="primary" @click="applyToJoinEnterprise(row)">申请加入</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </template>
+            </el-tab-pane>
+
+            <el-tab-pane label="用户中心" name="second">
+                <template>
+                    <el-table
+                            :data="tableData"
+                            stripe
+                            style="width: 100%">
+                        <el-table-column
+                                prop="username"
+                                label="账号"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="name"
+                                label="昵称"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                label="头像"
+                                width="180">
+                            <div class="block">
+                                <el-avatar :size="50" :src="circleUrl"></el-avatar>
+                            </div>
+                        </el-table-column>
+                        <el-table-column
+                                prop="location"
+                                label="地址"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="enterprise"
+                                label="所属企业群组"
+                                width="180">
+                        </el-table-column>
+                        <el-table-column
+                                prop="identity"
+                                label="企业群组负责人">
+                        </el-table-column>
+                    </el-table>
+                </template>
+                <br>
+                <el-row>
+                    <el-button type="primary" @click="changeInformation">修改个人信息</el-button>
+                    <el-button type="primary" @click="changePassword">修改密码</el-button>
+                    <el-button type="primary" v-if="shouldShowButton4" @click="UpdateGroupInformation">修改群信息
+                    </el-button>
+                    <el-button type="primary" v-if="shouldShowButton3" @click="ApplyToBeGroupManager">
+                        申请成为群组负责人
+                    </el-button>
+                    <el-button type="primary" @click="LookInformation">企业消息</el-button>
+                    <el-button type="primary" v-if="shouldShowButton2" @click="LeaveEnterprise">退出群组</el-button>
+                </el-row>
+            </el-tab-pane>
+
+            <el-tab-pane label="资金中心" name="third">
+                <el-row>
+                    <el-button type="primary" @click="CheckPersonalFund">查看个人资金</el-button>
+                    <el-button type="primary" v-if="shouldShowButton5" @click="CheckEnterpriseFund">
+                        查看所属企业资金
+                    </el-button>
+                    <el-button type="primary" v-if="shouldShowButton6" @click="DepositFundsToEnterprise">
+                        充值资金到企业
+                    </el-button>
+                    <el-button type="primary" v-if="shouldShowButton7" @click="ViewWhoCanUseGroupFunds">
+                        查看可以使用群资金的用户
+                    </el-button>
+                    <el-button type="primary" v-if="shouldShowButton8" @click="ViewWhoCanNotUseGroupFunds">
+                        查看不可以使用群资金的用户
+                    </el-button>
+                </el-row>
+                <br>
+                <br>
+                <br>
+                <el-row>
+                    <el-button type="primary" @click="changePaymentPassword">设置或修改支付密码</el-button>
+                    <el-button type="primary" @click="individualPayment">发起个人支付</el-button>
+                    <el-button type="primary" v-if="shouldShowButton10" @click="enterpriseGroupPayment">用企业群组支付
+                    </el-button>
+                    <el-button type="primary" v-if="shouldShowButton9" @click="proceeds">收款信息</el-button>
+                    <el-button type="primary" @click="checkPersonalBills">个人账单</el-button>
+                    <el-button type="primary" v-if="shouldShowButton11" @click="checkEnterpriseBills">企业账单</el-button>
+                </el-row>
+            </el-tab-pane>
+        </el-tabs>
+    </template>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible"
+            width="60%"
+            :before-close="handleClose">
+
+        <el-form ref="form" :model="form" label-width="80px">
+            <el-form-item label="昵称">
+                <el-input v-model="form.name"></el-input>
+            </el-form-item>
+            <el-form-item label="地址">
+                <el-input v-model="form.location"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update">确认修改</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible2"
+            width="60%"
+            :before-close="handleClose">
+
+        <el-form ref="form" :model="form2" status-icon :rules="rules" label-width="80px">
+            <el-form-item label="原密码">
+                <el-input type="password" v-model="form2.originalPassword"></el-input>
+            </el-form-item>
+            <el-form-item label="新密码" prop="newPassword">
+                <el-input type="password" v-model="form2.newPassword" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update2">确认修改</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="消息" :visible.sync="dialogVisible3" :before-close="handleClose2">
+        <el-table :data="gridData">
+            <el-table-column property="information" label="消息" width="350"></el-table-column>
+            <el-table-column label="操作">
+                <template v-slot="{ row }">
+                    <el-button type="primary" @click="agree(row)">同意</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible4"
+            width="60%"
+            :before-close="handleClose">
+
+        <el-form ref="form" :model="form3" label-width="100px">
+            <el-form-item label="企业名字">
+                <el-input v-model="form3.enterpriseName"></el-input>
+            </el-form-item>
+            <el-form-item label="企业工作方向">
+                <el-input v-model="form3.EnterpriseWorkDirection"></el-input>
+            </el-form-item>
+            <el-form-item label="是否公开">
+                <el-radio-group v-model="form3.type">
+                    <el-radio label="1">公开</el-radio>
+                    <el-radio label="0">不公开</el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update3">确认修改</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="消息" :visible.sync="dialogVisible5" :before-close="handleClose2">
+        <el-table :data="gridData2">
+            <el-table-column property="username" label="可使用群资金的用户" width="350"></el-table-column>
+            <el-table-column label="操作">
+                <template v-slot="{ row }">
+                    <el-button type="primary" @click="revokePermission(row)">撤回使用权限</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog
+            title="消息" :visible.sync="dialogVisible6" :before-close="handleClose2">
+        <el-table :data="gridData3">
+            <el-table-column property="username" label="不可使用群资金的用户" width="350"></el-table-column>
+            <el-table-column label="操作">
+                <template v-slot="{ row }">
+                    <el-button type="primary" @click="givePermission(row)">给予使用权限</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible7"
+            width="60%"
+            :before-close="handleClose">
+        <el-form ref="form" :model="form4" label-width="80px" status-icon :rules="rules">
+            <el-form-item label="密码" prop="password">
+                <el-input type="password" v-model="form4.password"></el-input>
+            </el-form-item>
+            <el-form-item label="验证码">
+                <el-input v-model="form4.verificationCode"></el-input>
+            </el-form-item>
+            <br>
+            <el-form-item>
+                <el-button type="primary" @click="sendVerificationCode">向手机发送验证码</el-button>
+                <el-button type="primary" @click="update4">确认</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible8"
+            width="60%"
+            :before-close="handleClose2">
+        <el-form ref="form" :model="form5" label-width="90px" status-icon :rules="rules">
+            <el-form-item label="收款方账号">
+                <el-input v-model="form5.payee"></el-input>
+            </el-form-item>
+            <el-form-item label="支付金额" prop="paymentAmount">
+                <el-input v-model="form5.paymentAmount"></el-input>
+            </el-form-item>
+            <el-form-item label="支付密码">
+                <el-input type="password" v-model="form5.paymentCode"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update5">确认</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="消息" :visible.sync="dialogVisible9" :before-close="handleClose2" width="800px">
+        <el-table :data="gridData4">
+            <el-table-column property="initiator" label="发起人" width="150"></el-table-column>
+            <el-table-column property="theAmountToBeCollected" label="需要收款的金额" width="150"></el-table-column>
+            <el-table-column label="操作1" width="150">
+                <template v-slot="{ row }">
+                    <el-button type="primary" @click="rejection(row)">退回</el-button>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作2" width="150">
+                <template v-slot="{ row }">
+                    <el-button type="primary" @click="usePersonalCollection(row)">用个人收款</el-button>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作3" width="150">
+                <template v-slot="{ row }">
+                    <el-button type="primary" @click="useEnterpriseCollection(row)">用企业收款</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog
+            title="消息" :visible.sync="dialogVisible10" :before-close="handleClose">
+        <el-table :data="gridData5">
+            <el-table-column property="information" label="账单"></el-table-column>
+        </el-table>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible11"
+            width="60%"
+            :before-close="handleClose2">
+        <el-form ref="form" :model="form6" label-width="90px" status-icon :rules="rules">
+            <el-form-item label="收款方账号">
+                <el-input v-model="form6.payee"></el-input>
+            </el-form-item>
+            <el-form-item label="支付金额" prop="paymentAmount">
+                <el-input v-model="form6.paymentAmount"></el-input>
+            </el-form-item>
+            <el-form-item label="支付密码">
+                <el-input type="password" v-model="form6.paymentCode"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update6">确认</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible12"
+            width="60%"
+            :before-close="handleClose">
+        <el-form ref="form" :model="form7" label-width="90px" status-icon :rules="rules">
+            <el-form-item label="支付金额" prop="paymentAmount">
+                <el-input v-model="form7.paymentAmount"></el-input>
+            </el-form-item>
+            <el-form-item label="支付密码">
+                <el-input type="password" v-model="form7.paymentCode"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="update7">确认</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="消息" :visible.sync="dialogVisible13" :before-close="handleClose">
+        <el-table :data="gridData6">
+            <el-table-column property="information" label="企业账单"></el-table-column>
+        </el-table>
+    </el-dialog>
+</div>
+</body>
+
+<script>
+
+    var myVueInstance =new Vue({
+        el: '#app',
+        methods: {
+            // 在这里定义方法
+
+            proceeds() {
+                let vm = this;
+                vm.dialogVisible9 = true;
+                let jsonData = {
+                    'username': vm.tableData[0].username
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/proceeds',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        for (let i = 0; i < result.data.length; i++) {
+                            let temp = result.data[i];
+                            let data = {
+                                initiator: temp[0],
+                                theAmountToBeCollected: temp[1]
+                            }
+                            vm.gridData4.push(data);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            checkPersonalBills() {
+                this.dialogVisible10 = true;
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/checkPersonalBills',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        for (let i = 0; i < result.data.length; i++) {
+                            let data = {
+                                information: '用户' + result.data[i][0] + "退回了" + result.data[i][1] + '元'
+                            }
+                            vm.gridData5.push(data);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            checkEnterpriseBills(){
+                this.dialogVisible13=true;
+            },
+
+            rejection(row) {
+                const index = this.gridData4.indexOf(row);
+                let vm = this;
+                let jsonData = {
+                    'username': vm.gridData4[index].initiator,
+                }
+                if (index !== -1) {
+                    this.gridData4.splice(index, 1);
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/rejection',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            usePersonalCollection(row) {
+                const index = this.gridData4.indexOf(row);
+                let vm = this;
+                let data = {
+                    information: '用户' + vm.gridData4[index].initiator + '向我转入了' + vm.gridData4[index].theAmountToBeCollected + '元'
+                }
+                vm.gridData5.push(data);
+                let jsonData = {
+                    'username': vm.tableData[0].username,
+                }
+                if (index !== -1) {
+                    this.gridData4.splice(index, 1);
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/usePersonalCollection',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            useEnterpriseCollection(row) {
+                const index = this.gridData4.indexOf(row);
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username,
+                }
+                if (index !== -1) {
+                    this.gridData4.splice(index, 1);
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/useEnterpriseCollection',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            changePaymentPassword() {
+                this.dialogVisible7 = true;
+            },
+
+            sendVerificationCode() {
+                this.$message('已向手机发送验证码');
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/sendVerificationCode',
+                    xhrFields: {
+                        withCredentials: true // 这里关键设置，让AJAX请求携带cookies
+                    },
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            individualPayment() {
+                this.dialogVisible8 = true;
+            },
+
+            enterpriseGroupPayment() {
+                this.dialogVisible11 = true;
+            },
+
+            ViewWhoCanUseGroupFunds() {
+                let vm = this;
+                vm.dialogVisible5 = true;
+                let jsonData = {
+                    'enterprise': vm.tableData[0].enterprise
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/ViewWhoCanUseGroupFunds',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        let data = result.data;
+                        for (let i = 0; i < data.length; i++) {
+                            let json = {
+                                username: data[i][0]
+                            }
+                            vm.gridData2.push(json);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            ViewWhoCanNotUseGroupFunds() {
+                let vm = this;
+                vm.dialogVisible6 = true;
+                let jsonData = {
+                    'enterprise': vm.tableData[0].enterprise
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/ViewWhoCannotUseGroupFunds',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        let data = result.data;
+                        for (let i = 0; i < data.length; i++) {
+                            let json = {
+                                username: data[i][0]
+                            }
+                            vm.gridData3.push(json);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            revokePermission(row) {
+                const index = this.gridData2.indexOf(row);
+                let vm = this;
+                let jsonData = {
+                    'username': vm.gridData2[index].username,
+                }
+                if (index !== -1) {
+                    this.gridData2.splice(index, 1);
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/RevokePermission',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            givePermission(row) {
+                const index = this.gridData3.indexOf(row);
+                let vm = this;
+                let jsonData = {
+                    'username': vm.gridData3[index].username,
+                }
+                if (index !== -1) {
+                    this.gridData3.splice(index, 1);
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/GivePermission',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            DepositFundsToEnterprise() {
+                this.dialogVisible12 = true
+            },
+
+            CheckEnterpriseFund() {
+                let vm = this;
+                let jsonData = {
+                    'enterpriseName': vm.tableData[0].enterprise
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/enterprise/queryOneEnterprise',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        vm.enterpriseFund = result.data[0][3];
+                        vm.$alert(vm.enterpriseFund + '元', '企业资金', {
+                            confirmButtonText: '确定',
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            CheckPersonalFund() {
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/CheckPersonalFund',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        vm.personalFund = result.data;
+                        vm.$alert(vm.personalFund + '元', '用户资金', {
+                            confirmButtonText: '确定',
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            UpdateGroupInformation() {
+                let vm = this;
+                vm.dialogVisible4 = true;
+                let jsonData = {
+                    'enterpriseName': vm.tableData[0].enterprise
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/enterprise/queryOneEnterprise',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        let data = result.data;
+                        vm.form3.enterpriseName = data[0][0];
+                        vm.form3.EnterpriseWorkDirection = data[0][1];
+                        vm.form3.type = data[0][2];
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            applyToJoinEnterprise(row) {
+                let vm = this;
+                this.$confirm('此操作将申请加入该企业群组, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    const index = this.tableData2.indexOf(row);
+                    let jsonData = {
+                        'enterprise': vm.tableData2[index].enterpriseName,
+                        'username': vm.tableData[0].username
+                    }
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/Management/user/applyToJoinEnterprise',
+                        data: JSON.stringify(jsonData),
+                        success: function (response) {
+                            // 请求成功时的处理逻辑
+                            vm.shouldShowButton1 = false;
+                            vm.tableData[0].enterprise = vm.tableData2[index].enterpriseName;
+                        },
+                        error: function (xhr, status, error) {
+                            // 请求失败时的处理逻辑
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消'
+                    });
+                });
+
+            },
+
+            agree(row) {
+                const index = this.gridData.indexOf(row);
+                let vm = this;
+                let numbers = ''; // 用于存储提取出的数字部分
+                for (let i = 0; i < vm.gridData[index].information.length; i++) {
+                    const char = vm.gridData[index].information.charAt(i); // 获取字符串中索引为 i 的字符
+                    if (!isNaN(char)) { // 检查字符是否为数字
+                        numbers += char; // 如果是数字，将其添加到结果字符串中
+                    }
+                }
+                let jsonData = {
+                    'username': numbers,
+                    'enterprise': vm.tableData[0].enterprise
+                }
+                if (index !== -1) {
+                    this.gridData.splice(index, 1);
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/agreeOnRequirement',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            ApplyToBeGroupManager() {
+                let vm = this;
+                this.$confirm('此操作将将申请成为企业群组负责人, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let jsondata = {
+                        'username': vm.tableData[0].username,
+                        'enterprise': vm.tableData[0].enterprise
+                    }
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/Management/user/applyBecomePrincipal',
+                        data: JSON.stringify(jsondata),
+                        success: function (response) {
+                            // 请求成功时的处理逻辑
+                        },
+                        error: function (xhr, status, error) {
+                            // 请求失败时的处理逻辑
+                        }
+                    })
+                    this.$message({
+                        type: 'success',
+                        message: '已申请!'
+                    });
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消'
+                    });
+                });
+
+            },
+
+            LookInformation() {
+                let vm = this;
+                vm.dialogVisible3 = true;
+                if (vm.tableData[0].identity === '是') {
+                    let jsondata = {
+                        'enterprise': vm.tableData[0].enterprise
+                    }
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/Management/user/lookForInformation',
+                        data: JSON.stringify(jsondata),
+                        success: function (response) {
+                            // 请求成功时的处理逻辑
+                            let result = JSON.parse(response);
+                            if (result.msg === '有消息') {
+                                let data = result.data;
+                                for (let i = 0; i < data.length; i++) {
+                                    let temp = data[i];
+                                    let jsondata = {
+                                        information: '用户' + temp[0] + '申请成为企业群组负责人'
+                                    }
+                                    vm.gridData.push(jsondata);
+                                }
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // 请求失败时的处理逻辑
+                        }
+                    })
+                }
+            },
+
+            LeaveEnterprise() {
+                let vm = this;
+                this.$confirm('此操作将退出群组, 是否继续?', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    let jsondata = {
+                        'enterprise': vm.tableData[0].enterprise,
+                        'username': vm.tableData[0].username
+                    }
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/Management/user/LeaveEnterprise',
+                        data: JSON.stringify(jsondata),
+                        success: function (response) {
+                            // 请求成功时的处理逻辑
+                        },
+                        error: function (xhr, status, error) {
+                            // 请求失败时的处理逻辑
+                        }
+                    })
+                    vm.tableData[0].enterprise = '无';
+                    this.$message({
+                        type: 'success',
+                        message: '退出成功!'
+                    });
+                    vm.shouldShowButton2 = false;
+                    vm.shouldShowButton1 = true;
+                    vm.shouldShowButton3 = false;
+                    vm.shouldShowButton4 = false
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消'
+                    });
+                });
+            },
+
+            update() {
+                let vm = this;
+                let jsondata = {
+                    'name': vm.form.name,
+                    'location': vm.form.location,
+                    'username': vm.tableData[0].username,
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/updateUser',
+                    data: JSON.stringify(jsondata),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+                this.dialogVisible = false;
+                vm.tableData[0].name = vm.form.name;
+                vm.tableData[0].location = vm.form.location
+            },
+
+            update2() {
+                let vm = this;
+                let jsondata = {
+                    'originalPassword': vm.form2.originalPassword,
+                    'newPassword': vm.form2.newPassword,
+                    'username': vm.tableData[0].username,
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/updateUserPassword',
+                    data: JSON.stringify(jsondata),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        if (result.msg === '修改成功') {
+                            // 提示用户填写账号和密码
+                            vm.$alert('修改成功', '信息', {
+                                confirmButtonText: '确定'
+                            })
+                            vm.dialogVisible2 = false;
+                        } else {
+                            vm.$alert('相关信息错误,修改失败', '信息', {
+                                confirmButtonText: '确定'
+                            })
+                            vm.dialogVisible2 = false;
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            update3() {
+                let vm = this;
+                let jsonData = {
+                    'enterpriseName': vm.tableData[0].enterprise,
+                    'EnterpriseWorkDirection': vm.form3.EnterpriseWorkDirection,
+                    'state': vm.form3.type,
+                    'newEnterpriserName': vm.form3.enterpriseName
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/enterprise/updateEnterpriseInformation',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+                this.dialogVisible4 = false;
+                this.tableData[0].enterprise = this.form3.enterpriseName;
+            },
+
+            update4() {
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username,
+                    'paymentPassword': vm.form4.password,
+                    'verificationCode': vm.form4.verificationCode
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/changePaymentPassword',
+                    xhrFields: {
+                        withCredentials: true // 这里关键设置，让AJAX请求携带cookies
+                    },
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        if (result.msg === '修改成功') {
+                            vm.dialogVisible7 = false;
+                        } else {
+                            this.$alert('验证码错误', '错误信息', {
+                                confirmButtonText: '确定'
+                            })
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            update5() {
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username,
+                    'payee': vm.form5.payee,
+                    'paymentAmount': vm.form5.paymentAmount,
+                    'paymentCode': vm.form5.paymentCode
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/payment',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        vm.$alert(result.msg, '进程结果', {
+                            confirmButtonText: '确定',
+                        });
+                        if (result.msg === '发起支付成功') {
+                            let data = {
+                                information: '向用户' + vm.form5.payee + '转出' + vm.form5.paymentAmount + '元'
+                            }
+                            vm.gridData5.push(data);
+                        }
+                        vm.dialogVisible8 = false;
+                        vm.form5 = {
+                            payee: '',
+                            paymentAmount: '',
+                            paymentCode: ''
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+
+            },
+
+            update6() {
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username,
+                    'payee': vm.form6.payee,
+                    'paymentAmount': vm.form6.paymentAmount,
+                    'paymentCode': vm.form6.paymentCode
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/payment2',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        vm.$alert(result.msg, '进程结果', {
+                            confirmButtonText: '确定',
+                        });
+                        if (result.msg === '发起支付成功') {
+                            let data = {
+                                information: '向' + vm.form5.payee + '转出' + vm.form5.paymentAmount + '元'
+                            }
+                            vm.gridData5.push(data);
+                        }
+                        vm.dialogVisible11 = false;
+                        vm.form6 = {
+                            payee: '',
+                            paymentAmount: '',
+                            paymentCode: ''
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            update7() {
+                let vm = this;
+                let jsonData = {
+                    'username': vm.tableData[0].username,
+                    'paymentAmount': vm.form7.paymentAmount,
+                    'paymentCode': vm.form7.paymentCode
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/DepositFundsToEnterprise',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        //请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        vm.$alert(result.msg, '进程结果', {
+                            confirmButtonText: '确定',
+                        });
+                        vm.dialogVisible12 = false;
+                        vm.form7 = {
+                            paymentAmount: '',
+                            paymentCode: ''
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            handleClick(tab, event) {
+                let vm = this;
+                if (tab.name === 'first') {
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/Management/enterprise/query',
+                        success: function (response) {
+                            // 请求成功时的处理逻辑
+                            let result = JSON.parse(response);
+                            let data = result.data;
+                            for (let i = 0; i < data.length; i++) {
+                                let temp = data[i];
+                                let jsondata = {
+                                    enterpriseName: temp[0],
+                                    NumberOfEnterprise: temp[1],
+                                    EnterpriseWorkDirection: temp[2],
+                                    enterpriseFund: temp[3]
+                                }
+                                vm.tableData2.push(jsondata);
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // 请求失败时的处理逻辑
+                        }
+                    })
+                } else {
+                    vm.tableData2 = [];
+                }
+                let jsonData = {
+                    'username': vm.tableData[0].username
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/getIdentity',
+                    data: JSON.stringify(jsonData),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        if (result.data === '2') {
+                            vm.tableData[0].identity = '是';
+                        } else vm.tableData[0].identity = '不是';
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+                if (vm.tableData[0].enterprise === '无') {
+                    vm.shouldShowButton1 = true;
+                    vm.shouldShowButton2 = false;
+                    vm.tableData[0].identity = '不是';
+                    vm.shouldShowButton3 = false;
+                    vm.shouldShowButton4 = false;
+                    vm.shouldShowButton5 = false;
+                    vm.shouldShowButton6 = false;
+                } else {
+                    vm.shouldShowButton5 = true;
+                    if (vm.tableData[0].identity === '不是') {
+                        vm.shouldShowButton3 = true;
+                    } else {
+                        vm.shouldShowButton3 = false;
+                        vm.shouldShowButton4 = true;
+                        vm.shouldShowButton6 = true;
+                        vm.shouldShowButton7 = true;
+                        vm.shouldShowButton8 = true;
+                        vm.shouldShowButton11 = true;
+                    }
+                    vm.shouldShowButton2 = true;
+                    vm.shouldShowButton1 = false;
+                }
+            },
+
+            changeInformation() {
+                this.dialogVisible = true;
+            },
+
+            changePassword() {
+                this.dialogVisible2 = true;
+            },
+
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {
+                    });
+            },
+
+            handleClose2(done) {
+                let vm = this;
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        vm.dialogVisible3 = false;
+                        vm.dialogVisible5 = false;
+                        vm.dialogVisible6 = false;
+                        vm.dialogVisible8 = false;
+                        vm.dialogVisible11 = false;
+                        vm.dialogVisible9 = false;
+                        vm.gridData = [];
+                        vm.gridData2 = [];
+                        vm.gridData3 = [];
+                        vm.gridData4 = [];
+                        vm.form5 = {
+                            payee: '',
+                            paymentAmount: '',
+                            paymentCode: ''
+                        };
+                    })
+                    .catch(_ => {
+                    });
+            }
+        },
+        data() {
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else if (!/^(?=.*[a-zA-Z])(?=.*\d).{6,}$/.test(value)) {
+                    callback(new Error('密码必须包含字母和数字，且长度至少为6位'));
+                } else {
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入金额'));
+                } else if (!/^[1-9]\d*$/.test(value)) {
+                    callback(new Error('金额必须是整数且大于0'));
+                } else {
+                    callback();
+                }
+            };
+            var validatePass3 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else if (!/^\d{6}$/.test(value)) {
+                    callback(new Error('密码必须是6位数字'));
+                } else {
+                    callback();
+                }
+            };
+            return {
+                enterpriseFund: '',
+                personalFund: '',
+                form: {
+                    name: '',
+                    location: ''
+                },
+                form2: {
+                    originalPassword: '',
+                    newPassword: '',
+                },
+                form3: {
+                    enterpriseName: '',
+                    EnterpriseWorkDirection: '',
+                    type: '',
+                },
+                form4: {
+                    password: '',
+                    verificationCode: ''
+                },
+                form5: {
+                    payee: '',
+                    paymentAmount: '',
+                    paymentCode: ''
+                },
+                form6: {
+                    payee: '',
+                    paymentAmount: '',
+                    paymentCode: ''
+                },
+                form7: {
+                    paymentAmount: '',
+                    paymentCode: ''
+                },
+                rules: {
+                    newPassword: [
+                        {validator: validatePass, trigger: 'blur'}
+                    ],
+                    paymentAmount: [
+                        {validator: validatePass2, trigger: 'blur'}
+                    ],
+                    password: [
+                        {validator: validatePass3, trigger: 'blur'}
+                    ],
+                },
+                tableData: [],
+                tableData2: [],
+                gridData: [],
+                gridData2: [],
+                gridData3: [],
+                gridData4: [],
+                gridData5: [],
+                gridData6: [],
+                dialogVisible: false,
+                dialogVisible2: false,
+                dialogVisible3: false,
+                dialogVisible4: false,
+                dialogVisible5: false,
+                dialogVisible6: false,
+                dialogVisible7: false,
+                dialogVisible8: false,
+                dialogVisible9: false,
+                dialogVisible10: false,
+                dialogVisible11: false,
+                dialogVisible12: false,
+                dialogVisible13: false,
+                activeName: 'second',
+                circleUrl: "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png",
+                identity: '',
+                shouldShowButton1: false,
+                shouldShowButton2: false,
+                shouldShowButton3: false,
+                shouldShowButton4: false,
+                shouldShowButton5: false,
+                shouldShowButton6: false,
+                shouldShowButton7: false,
+                shouldShowButton8: false,
+                shouldShowButton9: false,
+                shouldShowButton10: false,
+                shouldShowButton11: false
+            }; // 在这里定义数据
+        },
+        mounted() {
+            let vm = this;
+            $.ajax({
+                type: 'post',
+                url: 'http://localhost:8080/Management/user/getUsername',
+                xhrFields: {
+                    withCredentials: true // 这里关键设置，让AJAX请求携带cookies
+                },
+                success: function (response) {
+                    // 请求成功时的处理逻辑
+                    let result = JSON.parse(response);
+                    vm.form.name = result.data.name;
+                    vm.form.location = result.data.location;
+                    if (result.data.useEnterpriseFund === 1) {
+                        vm.shouldShowButton9 = true;
+                        vm.shouldShowButton10 = true;
+                    } else vm.shouldShowButton9 = false;
+                    if (result.data.identity === '1') {
+                        var jsondata = {
+                            username: result.data.username,
+                            name: result.data.name,
+                            location: result.data.location,
+                            enterprise: result.data.enterprise,
+                            identity: '不是'
+                        }
+                        vm.shouldShowButton9 = true;
+                    } else
+                        var jsondata = {
+                            username: result.data.username,
+                            name: result.data.name,
+                            location: result.data.location,
+                            enterprise: result.data.enterprise,
+                            identity: '是'
+                        };
+                    vm.tableData.push(jsondata);
+                    vm.handleClick({name: 'second'}, null);
+                },
+                error: function (xhr, status, error) {
+                    // 请求失败时的处理逻辑
+                }
+            });
+
+        }
+    });
+
+    setInterval(function () {
+        let jsonData={
+            username:myVueInstance.tableData[0].username
+        }
+        $.ajax({
+            type: 'post',
+            url: 'http://localhost:8080/Management/user/getbannedState',
+            data: JSON.stringify(jsonData),
+            success: function (response) {
+                // 请求成功时的处理逻辑
+                let result = JSON.parse(response);
+                if (result.data===0){
+                    window.location.href = "banAccount.html";
+                }
+            },
+            error: function (xhr, status, error) {
+                // 请求失败时的处理逻辑
+            }
+        });
+    },1000)
+</script>
+
+</html>

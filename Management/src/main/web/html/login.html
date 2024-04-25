@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>登录界面</title>
+    <style>
+        #app {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.27);
+            border-radius: 10px;
+            border: 1px solid #aaa;
+            width: 424px;
+            padding: 50px;
+            font-size: 16px;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5), 0 0 15px rgba(75, 75, 75, 0.3);
+            text-align: left;
+        }
+    </style>
+</head>
+
+<script src="../js/code.jquery.com_jquery-3.7.1.js"></script>
+<script src="../js/vue.js"></script>
+<script src="../element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+
+<body>
+<div id="app">
+    <div class="reg-content">
+        <h1>欢迎登录</h1>
+        <span>没有帐号？</span> <a href="register.html">注册</a>
+    </div>
+    <br>
+    <el-form ref="form" :model="form" label-width="80px">
+        <el-form-item label="账号">
+            <el-input placeholder="请输入账号" v-model="form.username"></el-input>
+        </el-form-item>
+
+        <el-form-item label="密码">
+            <el-input placeholder="请输入密码" v-model="form.password" show-password></el-input>
+        </el-form-item>
+
+
+        <el-form-item>
+            <el-button type="primary" @click="checkAndSubmit">登录</el-button>
+            <el-button type="primary" @click="visitorLogin">游客登录</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+
+</body>
+
+<script>
+    new Vue({
+        el: '#app',
+        methods: {
+            // 在这里定义方法
+            checkAndSubmit() {
+                let vm = this;
+                // 检查账号和密码是否已经填写
+                if (this.form.username && this.form.password) {
+                    // 执行登录操作
+                    let date = {
+                        'username': this.form.username,
+                        'password': this.form.password,
+                    };
+                    $.ajax({
+                        type: 'post',
+                        url: 'http://localhost:8080/Management/user/login',
+                        // url: 'http://localhost:80/Management_war/user/login',
+                        xhrFields: {
+                            withCredentials: true // 这里关键设置，让AJAX请求携带cookies
+                        },
+                        data: JSON.stringify(date),
+                        success: function (response) {
+                            // 请求成功时的处理逻辑
+                            let result=JSON.parse(response);
+                            if (result.msg==='用户登录成功') {
+                                if (result.data.identity === "1"||result.data.identity === "2") {
+                                    window.location.href = "userInterface.html";
+                                } else {
+                                    window.location.href = "siteManagerInterface.html";
+                                }
+                            }else {
+                                vm.$alert('账号或密码错误', '登录失败', {
+                                    confirmButtonText: '确定'
+                                })
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            // 请求失败时的处理逻辑
+                        }
+                    })
+                 } else {
+                    // 提示用户填写账号和密码
+                    this.$alert('没有填写账号或密码', '错误信息', {
+                        confirmButtonText: '确定'
+                    })
+                 }
+            },
+            visitorLogin() {
+                window.location.href ="visitorInterface.html";
+            }
+        },
+        data() {
+            return {
+                form: {
+                    username: "",
+                    password: "",
+                },
+            }; // 在这里定义数据
+        }
+    });
+</script>
+
+</html>

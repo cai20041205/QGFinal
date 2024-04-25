@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>网站管理员页面</title>
+    <style>
+        #app {
+            display: grid;
+            place-items: center;
+            height: 100vh; /* 设置高度为视口高度，使内容垂直居中 */
+        }
+    </style>
+</head>
+
+<script src="../js/code.jquery.com_jquery-3.7.1.js"></script>
+<script src="../js/vue.js"></script>
+<script src="../element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+
+<body>
+
+<div id="app">
+    <el-row>
+        <el-button type="primary" @click="checkTotalFunds">查看网站总余额</el-button>
+        <el-button type="primary" @click="openTheBannedBox">封禁用户或企业</el-button>
+        <el-button type="primary" @click="openTheBannedBox2">解封用户或企业</el-button>
+    </el-row>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible"
+            width="60%"
+            :before-close="handleClose">
+
+        <el-form ref="form" :model="form">
+            <el-form-item label="要封禁的账号或企业">
+                <el-input v-model="form.name"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="banned">确认封禁</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+
+    <el-dialog
+            title="个人信息"
+            :visible.sync="dialogVisible2"
+            width="60%"
+            :before-close="handleClose">
+        <el-form ref="form" :model="form2">
+            <el-form-item label="要解封的账号或企业">
+                <el-input v-model="form2.name"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="liftTheban">确认封禁</el-button>
+            </el-form-item>
+        </el-form>
+
+        <span slot="footer" class="dialog-footer">
+
+  </span>
+    </el-dialog>
+</div>
+
+</body>
+
+<script>
+    new Vue({
+        el: '#app',
+        methods: {
+            // 在这里定义方法
+            checkTotalFunds() {
+                let vm = this;
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/software/checkTotalFunds',
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        let result = JSON.parse(response);
+                        vm.$alert(result.data, '网站总余额', {
+                            confirmButtonText: '确定',
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+            openTheBannedBox() {
+                this.dialogVisible = true
+            },
+            openTheBannedBox2(){
+                this.dialogVisible2=true;
+            },
+            banned() {
+                let vm = this;
+                let jsonData = {
+                    username: vm.form.name
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/software/banned',
+                    data:JSON.stringify(jsonData),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        vm.dialogVisible = false;
+                        vm.$message('已封禁');
+                        vm.form.name='';
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            liftTheban(){
+                let vm = this;
+                let jsonData = {
+                    username: vm.form2.name
+                }
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/software/liftTheban',
+                    data:JSON.stringify(jsonData),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        vm.dialogVisible2 = false;
+                        vm.$message('已解封');
+                        vm.form2.name='';
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {
+                    });
+            },
+        },
+
+        data() {
+            return {
+                dialogVisible: false,
+                dialogVisible2: false,
+                form: {
+                    name: ''
+                },
+                form2: {
+                    name: ''
+                }
+            }; // 在这里定义数据
+        }
+
+    });
+</script>
+
+</html>
+

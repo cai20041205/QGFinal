@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册页面</title>
+
+    <style>
+
+        #app {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(255, 255, 255, 0.27);
+            border-radius: 10px;
+            border: 1px solid #aaa;
+            width: 424px;
+            padding: 50px;
+            font-size: 16px;
+            box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.5), 0 0 15px rgba(75, 75, 75, 0.3);
+            text-align: left;
+        }
+
+    </style>
+</head>
+
+<script src="../js/code.jquery.com_jquery-3.7.1.js"></script>
+<script src="../js/vue.js"></script>
+<script src="../element-ui/lib/index.js"></script>
+<link rel="stylesheet" href="../element-ui/lib/theme-chalk/index.css">
+
+<body>
+
+<div id="app">
+    <div class="reg-content">
+        <h1>欢迎注册</h1>
+        <span>已有帐号？</span> <a href="login.html">登录</a>
+    </div>
+    <br>
+    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+        <el-form-item label="账号(手机号)" prop="username">
+            <el-input placeholder="请输入账号" v-model="ruleForm.username" autocomplete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+            <el-input  placeholder="请输入密码" type="password" v-model="ruleForm.password" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="确认密码" prop="checkPass">
+            <el-input placeholder="请再次输入密码" type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item>
+            <el-button type="primary" @click="submitForm">注册</el-button>
+        </el-form-item>
+    </el-form>
+</div>
+
+</body>
+<script>
+    new Vue({
+        el: '#app',
+        methods: {
+            // 在这里定义方法
+            submitForm() {
+                let date = {
+                    'username': this.ruleForm.username,
+                    'password': this.ruleForm.password,
+                    'identity': this.ruleForm.identity
+                };
+                $.ajax({
+                    type: 'post',
+                    url: 'http://localhost:8080/Management/user/register',
+                    data: JSON.stringify(date),
+                    success: function (response) {
+                        // 请求成功时的处理逻辑
+                        alert(response);
+                    },
+                    error: function (xhr, status, error) {
+                        // 请求失败时的处理逻辑
+                    }
+                })
+            },
+        },
+        data() {
+            var validatePass = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入密码'));
+                } else if (!/^(?=.*[a-zA-Z])(?=.*\d).{6,}$/.test(value)) {
+                    callback(new Error('密码必须包含字母和数字，且长度至少为6位'));
+                }else {
+                    if (this.ruleForm.checkPass !== '') {
+                        this.$refs.ruleForm.validateField('checkPass');
+                    }
+                    callback();
+                }
+            };
+            var validatePass2 = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请再次输入密码'));
+                } else if (value !== this.ruleForm.password) {
+                    callback(new Error('两次输入密码不一致!'));
+                } else {
+                    callback();
+                }
+            };
+            var validateUsername = (rule, value, callback) => {
+                if (value === '') {
+                    callback(new Error('请输入手机号'));
+                } else if (!/^1[3456789]\d{9}$/.test(value)) {
+                    callback(new Error('请输入正确的手机号'));
+                } else {
+                    callback();
+                }
+            };
+            return {
+                ruleForm: {
+                    password: '',
+                    checkPass: '',
+                    username:'',
+                    identity:'1'
+                },
+                rules: {
+                    password: [
+                        { validator: validatePass, trigger: 'blur' }
+                    ],
+                    checkPass: [
+                        { validator: validatePass2, trigger: 'blur' }
+                    ],
+                    username: [
+                        { validator: validateUsername, trigger: 'blur'}
+                    ]
+                }
+            };
+        }
+    });
+</script>
+</html>
