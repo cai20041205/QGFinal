@@ -104,6 +104,9 @@
                 $.ajax({
                     type: 'post',
                     url: 'http://localhost:8080/Management/software/banned',
+                     xhrFields: {
+                        withCredentials: true // 这里关键设置，让AJAX请求携带cookies
+                    },
                     data:JSON.stringify(jsonData),
                     success: function (response) {
                         // 请求成功时的处理逻辑
