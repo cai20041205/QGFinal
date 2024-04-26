@@ -36,8 +36,13 @@ public class SoftwareServlet extends BaseServlet{
 
     //进行封禁
     public void banned(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        // 允许跨域请求的来源
+        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:63342");
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
         User user = JSON.parseObject(readRequestBody(req), User.class);
         service.banned(user);
+        HttpSession session = req.getSession(false);
+        session.setAttribute("username","");
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("status", 200);
         map.put("data", "");
