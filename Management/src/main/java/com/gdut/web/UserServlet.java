@@ -76,7 +76,6 @@ public class UserServlet extends BaseServlet{
         if (session != null) {
             String username = (String) session.getAttribute("username");
             User userByUsername = userService.getUserByUsername(username);
-            session.setAttribute("username","");
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("status", 200);
             map.put("data", userByUsername);
